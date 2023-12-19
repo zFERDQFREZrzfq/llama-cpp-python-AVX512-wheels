@@ -1,4 +1,4 @@
-name: Build Wheels for Text Generation Webui
+name: Build tensor core wheels for TGW
 
 on:
   workflow_dispatch:
