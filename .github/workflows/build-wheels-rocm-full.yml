@@ -63,9 +63,10 @@ jobs:
               'avx' = "AVX", "AVX2", "basic"
               'rename' = '0', '1'
               'exclude' = @(
-                  @{'os' = 'windows-latest';'rocm' = '5.4.2'},
-                  @{'os' = 'windows-latest';'rocm' = '5.5'},
-                  @{'os' = 'windows-latest';'rocm' = '5.6.1'},
+                  @{'os' = 'windows-latest'},
+                  # @{'os' = 'windows-latest';'rocm' = '5.4.2'},
+                  # @{'os' = 'windows-latest';'rocm' = '5.5'},
+                  # @{'os' = 'windows-latest';'rocm' = '5.6.1'},
                   @{'os' = 'ubuntu-20.04';'rocm' = '5.5.1'}
               )
           }
