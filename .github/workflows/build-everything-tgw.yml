@@ -1,0 +1,48 @@
+name: Build Everything TGW
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag of llama-cpp-python to build: v0.2.14'
+        default: 'v0.2.14'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:          
+  build_textgen_wheels:
+    name: CUDA Wheels
+    uses: ./.github/workflows/build-wheels-oobabooga.yml
+    with:
+      version: ${{ inputs.version }}
+
+  build_wheels_tensorcores:
+    name: Tensor Core CUDA wheels
+    needs: build_textgen_wheels
+    uses: ./.github/workflows/build-wheels-tensorcores.yml
+    with:
+      version: ${{ inputs.version }}
+      
+  build_wheels_cpu:
+    name: CPU-only Wheels
+    needs: build_wheels_tensorcores
+    uses: ./.github/workflows/build-wheels-cpu.yml
+    with:
+      version: ${{ inputs.version }}
+      
+  build_wheels_macos:
+    name: MacOS Metal Wheels
+    needs: build_wheels_cpu
+    uses: ./.github/workflows/build-wheels-macos.yml
+    with:
+      version: ${{ inputs.version }}
+      
+  build_wheels_rocm:
+    name: ROCm Wheels
+    needs: build_wheels_macos
+    uses: ./.github/workflows/build-wheels-oobabooga-rocm.yml
+    with:
+      version: ${{ inputs.version }}
