@@ -211,7 +211,11 @@ jobs:
             New-Item $initpath -itemType File -value $newinit -force
             python -m build --wheel
           }
-          
+
+      # Attempt at preventing rate limit errors
+      - name: Sleep for random duration
+        run: sleep $((RANDOM % 900))
+
       - name: Upload files to a GitHub release
         id: upload-release
         uses: svenstaro/upload-release-action@2.7.0
