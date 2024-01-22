@@ -59,7 +59,6 @@ jobs:
           $matrix = @{
               'os' = 'ubuntu-20.04', 'windows-latest'
               'pyver' = "3.11", "3.10"
-              'cuda' = [11.7.1]
               'avxver' = "AVX2", "AVX"
           }
           
@@ -75,7 +74,7 @@ jobs:
           Write-Output ('matrix=' + $matrixOut) >> $env:GITHUB_OUTPUT
           
   build_wheels:
-    name: Build Wheel ${{ matrix.os }} ${{ matrix.pyver }} ${{ matrix.cuda }} ${{ matrix.avxver }}
+    name: Build Wheel ${{ matrix.os }} ${{ matrix.pyver }} ${{ matrix.avxver }}
     needs: define_matrix
     runs-on: ${{ matrix.os }}
     strategy:
@@ -84,7 +83,7 @@ jobs:
       run:
         shell: pwsh
     env:
-      CUDAVER: ${{ matrix.cuda }}
+      CUDAVER: "11.7.1"
       AVXVER: ${{ matrix.avxver }}
       PCKGVER: ${{ inputs.version }}
 
@@ -116,7 +115,7 @@ jobs:
         uses: actions/cache@v3.3.2
         with:
           path: ./MSBuildExtensions
-          key: cuda-${{ matrix.cuda }}-vs-integration
+          key: cuda-11.7.1-vs-integration
           
       - name: Get Visual Studio Integration
         if: runner.os == 'Windows' && steps.vs-integration-cache.outputs.cache-hit != 'true'
