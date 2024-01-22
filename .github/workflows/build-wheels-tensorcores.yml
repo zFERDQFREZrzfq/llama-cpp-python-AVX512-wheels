@@ -214,7 +214,7 @@ jobs:
 
       # Attempt at preventing rate limit errors
       - name: Sleep for random duration
-        run: sleep $(shuf -i 0-899 -n 1)
+        run: sleep $((RANDOM % 900))
 
       - name: Upload files to a GitHub release
         id: upload-release
