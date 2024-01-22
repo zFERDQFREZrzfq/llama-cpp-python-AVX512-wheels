@@ -47,30 +47,23 @@ jobs:
     with:
       version: ${{ inputs.version }}
 
-  build_wheels_tensorcores_redundant:
-    name: Tensor Core CUDA wheels
-    needs: build_wheels_rocm
-    uses: ./.github/workflows/build-wheels-tensorcores.yml
-    with:
-      version: ${{ inputs.version }}
-
   build_textgen_wheels_redundant:
     name: CUDA Wheels
-    needs: build_wheels_tensorcores_redundant
+    needs: build_wheels_rocm
     uses: ./.github/workflows/build-wheels-oobabooga.yml
     with:
       version: ${{ inputs.version }}
 
-  build_wheels_rocm_redundant:
-    name: ROCm Wheels
+  build_wheels_tensorcores_redundant:
+    name: Tensor Core CUDA wheels
     needs: build_textgen_wheels_redundant
-    uses: ./.github/workflows/build-wheels-oobabooga-rocm.yml
+    uses: ./.github/workflows/build-wheels-tensorcores.yml
     with:
       version: ${{ inputs.version }}
 
   build_textgen_wheels_moreredundant:
     name: CUDA Wheels
-    needs: build_wheels_rocm_redundant
+    needs: build_wheels_tensorcores_redundant
     uses: ./.github/workflows/build-wheels-oobabooga.yml
     with:
       version: ${{ inputs.version }}
