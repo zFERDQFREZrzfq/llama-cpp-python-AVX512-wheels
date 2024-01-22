@@ -140,6 +140,5 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: steps.upload-release.outcome == 'failure'
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
           name: macos-wheels
           path: ./dist/*.whl
