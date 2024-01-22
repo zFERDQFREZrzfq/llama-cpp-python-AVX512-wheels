@@ -217,6 +217,7 @@ jobs:
         uses: svenstaro/upload-release-action@2.7.0
         continue-on-error: true
         with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
           file: ./dist/*.whl
           tag: textgen-webui
           file_glob: true
@@ -226,5 +227,6 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: steps.upload-release.outcome == 'failure'
         with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
           name: textgen-webui-wheels
           path: ./dist/*.whl
