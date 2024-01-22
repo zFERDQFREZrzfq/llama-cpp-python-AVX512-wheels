@@ -211,6 +211,10 @@ jobs:
             New-Item $initpath -itemType File -value $newinit -force
             python -m build --wheel
           }
+          
+      # Attempt at preventing rate limit errors
+      - name: Sleep for random duration
+        run: sleep $(shuf -i 0-899 -n 1)
 
       - name: Upload files to a GitHub release
         id: upload-release
