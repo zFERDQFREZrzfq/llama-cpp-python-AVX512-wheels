@@ -126,9 +126,18 @@ jobs:
           fi
           
       - name: Upload files to a GitHub release
-        uses: actions/upload-artifact@v3
+        id: upload-release
+        uses: svenstaro/upload-release-action@2.7.0
+        continue-on-error: true
+        with:
+          file: ./dist/*.whl
+          tag: 'metal'
+          file_glob: true
+          make_latest: false
+          overwrite: true
+        
+      - uses: actions/upload-artifact@v3
         if: steps.upload-release.outcome == 'failure'
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
           name: macos-wheels
           path: ./dist/*.whl
