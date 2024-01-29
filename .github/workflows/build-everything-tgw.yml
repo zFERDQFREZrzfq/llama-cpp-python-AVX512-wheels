@@ -13,22 +13,40 @@ permissions:
   contents: write
 
 jobs:          
-  build_textgen_wheels:
-    name: CUDA Wheels
+  build_textgen_wheels_linux:
+    name: CUDA Wheels Windows
     uses: ./.github/workflows/build-wheels-oobabooga.yml
     with:
       version: ${{ inputs.version }}
+      config: 'os:ubuntu-20.04'
 
-  build_wheels_tensorcores:
-    name: Tensor Core CUDA wheels
-    needs: build_textgen_wheels
+  build_textgen_wheels_windows:
+    name: CUDA Wheels Linux
+    needs: build_textgen_wheels_linux
+    uses: ./.github/workflows/build-wheels-oobabooga.yml
+    with:
+      version: ${{ inputs.version }}
+      config: 'windows-latest'
+
+  build_wheels_tensorcores_linux:
+    name: Tensor Core CUDA wheels Linux
+    needs: build_textgen_wheels_windows
     uses: ./.github/workflows/build-wheels-tensorcores.yml
     with:
       version: ${{ inputs.version }}
+      config: 'os:ubuntu-20.04'
+
+  build_wheels_tensorcores_windows:
+    name: Tensor Core CUDA wheels Windows
+    needs: build_wheels_tensorcores_linux
+    uses: ./.github/workflows/build-wheels-tensorcores.yml
+    with:
+      version: ${{ inputs.version }}
+      config: 'windows-latest'
       
   build_wheels_cpu:
     name: CPU-only Wheels
-    needs: build_wheels_tensorcores
+    needs: build_wheels_tensorcores_windows
     uses: ./.github/workflows/build-wheels-cpu.yml
     with:
       version: ${{ inputs.version }}
