@@ -59,15 +59,16 @@ jobs:
           $matrix = @{
               'os' = 'ubuntu-20.04', 'windows-latest'
               'pyver' = "3.10", "3.11"
-              'rocm' = '5.6.1'
+              # 'rocm' = '5.6.1'
               'avx' = "AVX", "AVX2"
               'rename' = '0', '1'
               'exclude' = @(
-                  @{'os' = 'windows-latest'},
+                  @{'os' = 'windows-latest'}
+                  # @{'os' = 'windows-latest'},
                   # @{'os' = 'windows-latest';'rocm' = '5.4.2'},
                   # @{'os' = 'windows-latest';'rocm' = '5.5'},
                   # @{'os' = 'windows-latest';'rocm' = '5.6.1'},
-                  @{'os' = 'ubuntu-20.04';'rocm' = '5.5.1'}
+                  # @{'os' = 'ubuntu-20.04';'rocm' = '5.5.1'}
               )
           }
           
@@ -93,7 +94,8 @@ jobs:
         shell: pwsh
     env:
       PCKGVER: ${{ inputs.version }}
-      ROCM_VERSION: ${{ matrix.rocm }}
+      # ROCM_VERSION: ${{ matrix.rocm }}
+      ROCM_VERSION: '5.6.1'
       AVXVER: ${{ matrix.avx }}
 
     steps:
