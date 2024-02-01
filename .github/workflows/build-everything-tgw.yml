@@ -23,9 +23,10 @@ jobs:
   sleep_1:
     name: Sleep for 15 minutes
     needs: build_textgen_wheels_windows
-    uses: jakejarvis/wait-action@master
-    with:
-      time: '900s'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sleep for 1 hour
+        run: sleep 900
 
   build_textgen_wheels_linux:
     name: CUDA Wheels Linux
@@ -38,9 +39,10 @@ jobs:
   sleep_2:
     name: Sleep for 15 minutes
     needs: build_textgen_wheels_linux
-    uses: jakejarvis/wait-action@master
-    with:
-      time: '900s'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sleep for 1 hour
+        run: sleep 900
 
   build_wheels_tensorcores_windows:
     name: Tensor Core Windows
@@ -53,9 +55,10 @@ jobs:
   sleep_3:
     name: Sleep for 15 minutes
     needs: build_wheels_tensorcores_windows
-    uses: jakejarvis/wait-action@master
-    with:
-      time: '900s'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sleep for 1 hour
+        run: sleep 900
 
   build_wheels_tensorcores_linux:
     name: Tensor Core Linux
@@ -68,9 +71,10 @@ jobs:
   sleep_4:
     name: Sleep for 15 minutes
     needs: build_wheels_tensorcores_linux
-    uses: jakejarvis/wait-action@master
-    with:
-      time: '900s'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sleep for 1 hour
+        run: sleep 900
 
   build_wheels_cpu:
     name: CPU-only Wheels
@@ -82,9 +86,10 @@ jobs:
   sleep_5:
     name: Sleep for 15 minutes
     needs: build_wheels_cpu
-    uses: jakejarvis/wait-action@master
-    with:
-      time: '900s'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sleep for 1 hour
+        run: sleep 900
 
   build_wheels_macos:
     name: MacOS Metal Wheels
@@ -96,9 +101,10 @@ jobs:
   sleep_6:
     name: Sleep for 15 minutes
     needs: build_wheels_macos
-    uses: jakejarvis/wait-action@master
-    with:
-      time: '900s'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sleep for 1 hour
+        run: sleep 900
 
   build_wheels_rocm:
     name: ROCm Wheels
