@@ -59,7 +59,6 @@ jobs:
           $matrix = @{
               'os' = 'ubuntu-20.04', 'windows-latest'
               'pyver' = "3.11", "3.10"
-              'avx' = "AVX512", "AVX512"
           }
           
           if ($env:CONFIGIN -ne 'Default') {$env:CONFIGIN.split(';').foreach({$matrix[$_.split(':')[0]] = $_.split(':')[1].split(',')})}
@@ -83,7 +82,7 @@ jobs:
       run:
         shell: pwsh
     env:
-      AVXVER: ${{ matrix.avx }}
+      AVXVER: AVX512
       PCKGVER: ${{ inputs.version }}
 
     steps:
