@@ -60,7 +60,6 @@ jobs:
               'os' = 'ubuntu-20.04', 'windows-latest'
               'pyver' = "3.11", "3.10"
               'cuda' =  "11.8.0", "12.1.1"
-              'avxver' = "AVX512", "AVX512"
           }
           
           if ($env:CONFIGIN -ne 'Default') {$env:CONFIGIN.split(';').foreach({$matrix[$_.split(':')[0]] = $_.split(':')[1].split(',')})}
@@ -85,7 +84,7 @@ jobs:
         shell: pwsh
     env:
       CUDAVER: ${{ matrix.cuda }}
-      AVXVER: ${{ matrix.avxver }}
+      AVXVER: AVX512
       PCKGVER: ${{ inputs.version }}
 
     steps:
