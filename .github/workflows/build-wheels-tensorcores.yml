@@ -196,7 +196,6 @@ jobs:
           if ($packageVersion -gt [version]'0.2.13') {$env:CMAKE_ARGS = "-DLLAMA_NATIVE=off $env:CMAKE_ARGS"}
           if ($packageVersion -lt [version]'0.1.66') {$env:CUDAFLAGS = '-arch=all'}
           if ($env:AVXVER -eq 'AVX') {$env:CMAKE_ARGS = $env:CMAKE_ARGS + ' -DLLAMA_AVX2=off -DLLAMA_FMA=off -DLLAMA_F16C=off'; $cputag = 'avx'}
-          if ($env:AVXVER -eq 'AVX512') {$env:CMAKE_ARGS = $env:CMAKE_ARGS + ' -DLLAMA_AVX512=on'; $cputag = 'avx512'}
           if ($env:AVXVER -eq 'basic') {$env:CMAKE_ARGS = $env:CMAKE_ARGS + ' -DLLAMA_AVX=off -DLLAMA_AVX2=off -DLLAMA_FMA=off -DLLAMA_F16C=off'; $cputag = 'basic'}
           $buildtag = "+cu$cudaVersion$cputag"
           if ($packageVersion -lt [version]'0.2.0') {
