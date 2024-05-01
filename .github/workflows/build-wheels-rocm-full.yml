@@ -60,7 +60,7 @@ jobs:
               'os' = 'ubuntu-20.04', 'windows-latest'
               'pyver' = "3.10", "3.11"
               # 'rocm' = '5.6.1'
-              'avx' = "AVX", "AVX2"
+              'avx' = "AVX", "AVX2", "AVX512"
               'rename' = '0', '1'
               'exclude' = @(
                   @{'os' = 'windows-latest'}
