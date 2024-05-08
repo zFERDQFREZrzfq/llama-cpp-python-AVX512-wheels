@@ -32,11 +32,3 @@ jobs:
     with:
       version: ${{ inputs.version }}
       config: 'os:windows-latest'
-      
-
-  build_wheels_tensorcores_linux:
-    name: Tensor Core Linux
-    uses: ./.github/workflows/build-wheels-tensorcores.yml
-    with:
-      version: ${{ inputs.version }}
-      config: 'os:ubuntu-20.04'
