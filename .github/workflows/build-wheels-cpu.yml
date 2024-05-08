@@ -57,7 +57,7 @@ jobs:
         id: set-matrix
         run: |
           $matrix = @{
-              'os' = ['windows-latest']
+              'os' = ["windows-latest"]
               'pyver' = ["3.11"]
           }
           
