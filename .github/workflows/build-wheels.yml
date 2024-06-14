@@ -174,6 +174,7 @@ jobs:
           if ($env:AVXVER -eq 'AVX') {$env:CMAKE_ARGS = $env:CMAKE_ARGS + ' -DLLAMA_AVX2=off -DLLAMA_FMA=off -DLLAMA_F16C=off'}
           if ($env:AVXVER -eq 'AVX512') {$env:CMAKE_ARGS = $env:CMAKE_ARGS + ' -DLLAMA_AVX512=on'}
           if ($env:AVXVER -eq 'basic') {$env:CMAKE_ARGS = $env:CMAKE_ARGS + ' -DLLAMA_AVX=off -DLLAMA_AVX2=off -DLLAMA_FMA=off -DLLAMA_F16C=off'}
+          if ($IsWindows) {$env:CMAKE_ARGS = $env:CMAKE_ARGS + ' -allow-unsupported-compiler'}
           $buildtag = "+cu$cudaVersion"
           if ($packageVersion -lt [version]'0.2.0') {
             $env:FORCE_CMAKE = '1'
