@@ -117,7 +117,15 @@ jobs:
         with:
           path: ./MSBuildExtensions
           key: cuda-${{ matrix.cuda }}-vs-integration
-          
+
+      - name: Get Visual Studio Integration
+        if: runner.os == 'Windows'
+        run: |
+          choco install visualstudio2019buildtools --version=16.11.9 -y
+          $vswherePath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsPath = & $vswherePath -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
+          echo "VSINSTALLDIR=$vsPath" >> $env:GITHUB_ENV
+
       - name: Get Visual Studio Integration
         if: runner.os == 'Windows' && steps.vs-integration-cache.outputs.cache-hit != 'true'
         run: |
@@ -197,6 +205,7 @@ jobs:
           if ($packageVersion -lt [version]'0.1.66') {$env:CUDAFLAGS = '-arch=all'}
           if ($env:AVXVER -eq 'AVX') {$env:CMAKE_ARGS = $env:CMAKE_ARGS + ' -DLLAMA_AVX2=off -DLLAMA_FMA=off -DLLAMA_F16C=off'; $cputag = 'avx'}
           if ($env:AVXVER -eq 'basic') {$env:CMAKE_ARGS = $env:CMAKE_ARGS + ' -DLLAMA_AVX=off -DLLAMA_AVX2=off -DLLAMA_FMA=off -DLLAMA_F16C=off'; $cputag = 'basic'}
+          if ($IsWindows) {$env:CMAKE_ARGS = $env:CMAKE_ARGS + " -DCMAKE_GENERATOR_TOOLSET='host=x64' -DCMAKE_MAKE_PROGRAM='$env:VSINSTALLDIR\MSBuild\Current\Bin\MSBuild.exe'"}
           $buildtag = "+cu$cudaVersion$cputag"
           if ($packageVersion -lt [version]'0.2.0') {
             $env:FORCE_CMAKE = '1'
