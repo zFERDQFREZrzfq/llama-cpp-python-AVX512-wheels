@@ -214,6 +214,8 @@ jobs:
               $buildtag = "+rocm$env:ROCM_VERSION"
           } else {$buildtag = "+rocm$env:ROCM_VERSION$env:AVXVER"}
           
+          $env:CMAKE_ARGS = "-DLLAVA_BUILD=off $env:CMAKE_ARGS"
+
           if ($packageVersion -gt [version]'0.2.13') {$env:CMAKE_ARGS = "-DLLAMA_NATIVE=off $env:CMAKE_ARGS"}
           if ($packageVersion -lt [version]'0.2.0') {
             python -m build --wheel -C--build-option=egg_info "-C--build-option=--tag-build=$buildtag"
@@ -228,8 +230,6 @@ jobs:
             python -m build --wheel
           }
 
-          $env:CMAKE_ARGS = "-DLLAVA_BUILD=off $env:CMAKE_ARGS"
-          
       - name: Upload files to a GitHub release
         id: upload-release
         uses: svenstaro/upload-release-action@2.7.0
