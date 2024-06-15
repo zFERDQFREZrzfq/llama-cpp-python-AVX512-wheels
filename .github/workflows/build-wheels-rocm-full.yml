@@ -227,6 +227,8 @@ jobs:
             New-Item $initpath -itemType File -value $newinit -force
             python -m build --wheel
           }
+
+          $env:CMAKE_ARGS = "-DLLAVA_BUILD=off $env:CMAKE_ARGS"
           
       - name: Upload files to a GitHub release
         id: upload-release
