@@ -57,7 +57,7 @@ jobs:
         id: set-matrix
         run: |
           $matrix = @{
-              'os' = 'ubuntu-20.04', 'windows-2019'
+              'os' = 'ubuntu-20.04', 'windows-2022'
               'pyver' = "3.11", "3.10"
               'cuda' = "11.8.0", "12.1.1"
               'avxver' = "AVX2", "AVX"
@@ -114,32 +114,6 @@ jobs:
           use-mamba: true
           add-pip-as-python-dependency: true
           auto-activate-base: false
-
-      - name: VS Integration Cache
-        id: vs-integration-cache
-        if: runner.os == 'Windows'
-        uses: actions/cache@v3.3.2
-        with:
-          path: ./MSBuildExtensions
-          key: cuda-${{ matrix.cuda }}-vs-integration
-
-      - name: Get Visual Studio Integration
-        if: runner.os == 'Windows' && steps.vs-integration-cache.outputs.cache-hit != 'true'
-        run: |
-          if ($env:CUDAVER -eq '12.1.1') {$x = '12.1.0'} else {$x = $env:CUDAVER}
-          $links = (Invoke-RestMethod 'https://github.com/Jimver/cuda-toolkit/raw/257a101bc5c656053b5dc220126744980ef7f5b8/src/links/windows-links.ts').Trim().split().where({$_ -ne ''})
-          for ($i=$q=0;$i -lt $links.count -and $q -lt 2;$i++) {if ($links[$i] -eq "'$x',") {$q++}}
-          Invoke-RestMethod $links[$i].Trim("'") -OutFile 'cudainstaller.zip'
-          & 'C:\Program Files\7-Zip\7z.exe' e cudainstaller.zip -oMSBuildExtensions -r *\MSBuildExtensions\* > $null
-          Remove-Item 'cudainstaller.zip'
-
-      - name: Install Visual Studio Integration
-        if: runner.os == 'Windows'
-        run: |
-          $y = (gi '.\MSBuildExtensions').fullname + '\*'
-          (gi 'C:\Program Files\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\*\BuildCustomizations').fullname.foreach({cp $y $_})
-          $cupath = 'CUDA_PATH_V' + $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.')).Replace('.','_')
-          echo "$cupath=$env:CONDA_PREFIX" >> $env:GITHUB_ENV
 
       - name: Change Package Name
         run: |
