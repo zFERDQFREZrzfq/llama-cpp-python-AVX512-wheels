@@ -51,29 +51,29 @@ jobs:
     env:
       CONFIGIN: ${{ inputs.config }}
       EXCLUDEIN: ${{ inputs.exclude }}
-
+        
     steps:
       - name: Define Job Output
         id: set-matrix
         run: |
           $matrix = @{
-              'os' = 'ubuntu-20.04', 'windows-2022'
+              'os' = 'ubuntu-20.04', 'windows-2019'
               'pyver' = "3.11", "3.10"
               'cuda' =  "11.8.0", "12.1.1"
               'avxver' = "AVX2", "AVX"
           }
-
+          
           if ($env:CONFIGIN -ne 'Default') {$env:CONFIGIN.split(';').foreach({$matrix[$_.split(':')[0]] = $_.split(':')[1].split(',')})}
-
+          
           if ($env:EXCLUDEIN -ne 'None') {
               $exclusions = @()
               $exclusions += $env:EXCLUDEIN.split(';').replace(':','=').replace(',',"`n") | ConvertFrom-StringData
               $matrix['exclude'] = $exclusions
           }
-
+          
           $matrixOut = ConvertTo-Json $matrix -Compress
           Write-Output ('matrix=' + $matrixOut) >> $env:GITHUB_OUTPUT
-
+          
   build_wheels:
     name: Build Wheel ${{ matrix.os }} ${{ matrix.pyver }} ${{ matrix.cuda }} ${{ matrix.avxver }}
     needs: define_matrix
@@ -94,16 +94,11 @@ jobs:
           repository: 'abetlen/llama-cpp-python'
           ref: ${{ inputs.version }}
           submodules: 'recursive'
-
+          
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.pyver }}
-
-      # Pin VS build tools to 17.9 so builds won't fail
-      - name: Install VS2022 BuildTools 17.9.7
-        run: choco install -y visualstudio2022buildtools --version=117.9.7.0 --params "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --installChannelUri https://aka.ms/vs/17/release/180911598_-255012421/channel"
-        if: runner.os == 'Windows'
-
+        
       - name: Setup Mamba
         uses: conda-incubator/setup-miniconda@v2.2.0
         with:
@@ -114,7 +109,7 @@ jobs:
           use-mamba: true
           add-pip-as-python-dependency: true
           auto-activate-base: false
-
+          
       - name: VS Integration Cache
         id: vs-integration-cache
         if: runner.os == 'Windows'
@@ -122,7 +117,7 @@ jobs:
         with:
           path: ./MSBuildExtensions
           key: cuda-${{ matrix.cuda }}-vs-integration
-
+          
       - name: Get Visual Studio Integration
         if: runner.os == 'Windows' && steps.vs-integration-cache.outputs.cache-hit != 'true'
         run: |
@@ -132,7 +127,7 @@ jobs:
           Invoke-RestMethod $links[$i].Trim("'") -OutFile 'cudainstaller.zip'
           & 'C:\Program Files\7-Zip\7z.exe' e cudainstaller.zip -oMSBuildExtensions -r *\MSBuildExtensions\* > $null
           Remove-Item 'cudainstaller.zip'
-
+          
       - name: Install Visual Studio Integration
         if: runner.os == 'Windows'
         run: |
@@ -140,7 +135,18 @@ jobs:
           (gi 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\*\BuildCustomizations').fullname.foreach({cp $y $_})
           $cupath = 'CUDA_PATH_V' + $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.')).Replace('.','_')
           echo "$cupath=$env:CONDA_PREFIX" >> $env:GITHUB_ENV
-
+          
+      - name: Install Dependencies
+        run: |
+          $cudaVersion = $env:CUDAVER
+          $cudaChannels = ''
+          $cudaNum = [int]$cudaVersion.substring($cudaVersion.LastIndexOf('.')+1)
+          while ($cudaNum -ge 0) { $cudaChannels += '-c nvidia/label/cuda-' + $cudaVersion.Remove($cudaVersion.LastIndexOf('.')+1) + $cudaNum + ' '; $cudaNum-- }
+          mamba install -y 'cuda' $cudaChannels.TrimEnd().Split()
+          if (!(mamba list cuda)[-1].contains('cuda')) {sleep -s 10; mamba install -y 'cuda' $cudaChannels.TrimEnd().Split()}
+          if (!(mamba list cuda)[-1].contains('cuda')) {throw 'CUDA Toolkit failed to install!'}
+          python -m pip install build wheel
+          
       - name: Change Package Name
         run: |
           $packageVersion = [version]$env:PCKGVER.TrimStart('v')
@@ -168,40 +174,15 @@ jobs:
           Copy-Item 'llama_cpp' 'llama_cpp_cuda_tensorcores' -recurse
           New-Item 'pyproject.toml' -itemType File -value $newpyproject -force
           New-Item 'CMakeLists.txt' -itemType File -value $cmakelists.Replace('llama_cpp','llama_cpp_cuda_tensorcores') -force
-
+          
           if ($packageVersion -gt [version]'0.2.13')
           {
             $pyScripts = (Get-ChildItem $(Join-Path '.' 'llama_cpp_cuda_tensorcores' '*.py'))
             $pyScripts.fullname.foreach({New-Item $_ -itemType File -value (Get-Content $_ -raw).replace('import llama_cpp.llama','from . import llama') -force})
           }
-
+          
       - name: Build Wheel
         run: |
-
-          # --- Spawn the VS shell
-          if ($IsWindows) {
-            Import-Module 'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\Microsoft.VisualStudio.DevShell.dll'
-            Enter-VsDevShell -VsInstallPath 'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools' -DevCmdArguments '-arch=x64 -host_arch=x64'
-            $env:DISTUTILS_USE_SDK=1
-          }
-
-          # --- Install CUDA using Conda
-          $cudaVersion = '${{ matrix.cuda }}'
-
-          mamba install -y -c nvidia/label/cuda-$cudaVersion cuda-toolkit cuda-runtime
-
-          if (!(mamba list cuda)[-1].contains('cuda')) {sleep -s 10; mamba install -y 'cuda' $cudaVersion}
-          if (!(mamba list cuda)[-1].contains('cuda')) {throw 'CUDA Toolkit failed to install!'}
-
-          $env:CUDA_PATH = $env:CONDA_PREFIX
-          $env:CUDA_HOME = $env:CONDA_PREFIX
-          if ($IsLinux) {$env:LD_LIBRARY_PATH = $env:CONDA_PREFIX + '/lib:' + $env:LD_LIBRARY_PATH}
-
-          # --- Install dependencies
-
-          python -m ensurepip --upgrade
-          python -m pip install --upgrade setuptools==69.5.1 build wheel ninja
-
           $packageVersion = [version]$env:PCKGVER.TrimStart('v')
           $cudaVersion = $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.')).Replace('.','')
           $env:CUDA_PATH = $env:CONDA_PREFIX
@@ -230,7 +211,7 @@ jobs:
             New-Item $initpath -itemType File -value $newinit -force
             python -m build --wheel
           }
-
+          
       - name: Upload files to a GitHub release
         id: upload-release
         uses: svenstaro/upload-release-action@2.7.0
@@ -242,7 +223,7 @@ jobs:
           file_glob: true
           make_latest: false
           overwrite: true
-
+        
       - uses: actions/upload-artifact@v3
         if: steps.upload-release.outcome == 'failure'
         with:
