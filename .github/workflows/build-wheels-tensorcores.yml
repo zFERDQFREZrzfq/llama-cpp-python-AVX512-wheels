@@ -1,4 +1,4 @@
-name: Build tensor core wheels
+name: Build Tensor Core Wheels
 
 on:
   workflow_dispatch:
