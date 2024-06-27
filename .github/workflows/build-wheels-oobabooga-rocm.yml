@@ -1,4 +1,4 @@
-name: Build ROCm Wheels for Text Generation Webui
+name: Build ROCm Wheels (wrapper)
 
 on:
   workflow_dispatch:

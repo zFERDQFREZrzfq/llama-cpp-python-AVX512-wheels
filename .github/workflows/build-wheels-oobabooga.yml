@@ -1,4 +1,4 @@
-name: Build Wheels for Text Generation Webui
+name: Build CUDA Wheels
 
 on:
   workflow_dispatch:

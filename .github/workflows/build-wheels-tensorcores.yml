@@ -1,4 +1,4 @@
-name: Build tensor core wheels for TGW
+name: Build tensor core wheels
 
 on:
   workflow_dispatch:
