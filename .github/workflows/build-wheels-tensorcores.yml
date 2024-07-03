@@ -185,7 +185,7 @@ jobs:
           {
             $pyScripts = (Get-ChildItem $(Join-Path '.' 'llama_cpp_cuda_tensorcores' '*.py'))
             $pyScripts.fullname.foreach({New-Item $_ -itemType File -value (Get-Content $_ -raw).replace('import llama_cpp.llama','from . import llama') -force})
-            $pyScripts.fullname.foreach({New-Item $_ -itemType File -value (Get-Content $_ -raw).replace('from llama_cpp.','from .llama_cpp') -force})
+            $pyScripts.fullname.foreach({New-Item $_ -itemType File -value (Get-Content $_ -raw).replace('from llama_cpp.','from .') -force})
           }
           
       - name: Build Wheel
