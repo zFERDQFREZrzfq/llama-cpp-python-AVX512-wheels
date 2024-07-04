@@ -186,10 +186,10 @@ jobs:
             $pyScripts = (Get-ChildItem $(Join-Path '.' 'llama_cpp_cuda' '*.py'))
             $pyScripts.fullname.foreach({
                 $content = Get-Content $_ -raw
-                $content = $content -replace '^import llama_cpp\.', 'import .'
-                $content = $content -replace '^from llama_cpp\.', 'from .'
-                $content = $content -replace '^import llama_cpp$', 'import llama_cpp_cuda as llama_cpp'
-                New-Item $_ -itemType File -value $content -force
+                $content = $content -replace '(?m)^import llama_cpp\.', 'import .'
+                $content = $content -replace '(?m)^from llama_cpp\.', 'from .'
+                $content = $content -replace '(?m)^import llama_cpp$', 'import llama_cpp_cuda as llama_cpp'
+                $content | Set-Content $_ -NoNewline
             })
           }
           
