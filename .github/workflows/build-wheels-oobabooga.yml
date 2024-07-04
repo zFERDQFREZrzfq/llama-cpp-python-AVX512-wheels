@@ -187,7 +187,7 @@ jobs:
             $pyScripts.fullname.foreach({
                 $content = Get-Content $_ -raw
                 $content = $content -replace '(?m)^import llama_cpp\.', 'from . import '
-                $content = $content -replace '(?m)^from llama_cpp\.', 'from '
+                $content = $content -replace '(?m)^from llama_cpp\.', 'from .'
                 $content = $content -replace '(?m)^import llama_cpp$', 'import llama_cpp_cuda as llama_cpp'
                 $content | Set-Content $_ -NoNewline
             })
