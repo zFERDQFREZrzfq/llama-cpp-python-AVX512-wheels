@@ -108,7 +108,7 @@ jobs:
       - name: Setup Mamba
         uses: conda-incubator/setup-miniconda@v3.1.0
         with:
-          activate-environment: "build"
+          activate-environment: "TGW"
           python-version: ${{ matrix.pyver }}
           miniforge-version: latest
           add-pip-as-python-dependency: true
