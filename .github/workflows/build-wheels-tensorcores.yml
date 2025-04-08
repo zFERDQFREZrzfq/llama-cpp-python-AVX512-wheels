@@ -57,7 +57,7 @@ jobs:
         id: set-matrix
         run: |
           $matrix = @{
-              'os' = 'ubuntu-20.04', 'windows-2019'
+              'os' = 'ubuntu-22.04', 'windows-2019'
               'pyver' = "3.11"
               'cuda' =  "12.4.1"
               'avxver' = "AVX2", "AVX"
@@ -149,6 +149,14 @@ jobs:
           mamba install -y 'cuda' $cudaChannels.TrimEnd().Split()
           if (!(mamba list cuda)[-1].contains('cuda')) {sleep -s 10; mamba install -y 'cuda' $cudaChannels.TrimEnd().Split()}
           if (!(mamba list cuda)[-1].contains('cuda')) {throw 'CUDA Toolkit failed to install!'}
+
+          # --- Install older libstdcxx-ng and set environment variables for compiler flags (Linux only)
+          if ($IsLinux) {
+            mamba install -y -c conda-forge libstdcxx-ng=9.3.0
+            $env:LDFLAGS = "-L$env:CONDA_PREFIX/lib -Wl,-rpath,$env:CONDA_PREFIX/lib"
+            $env:CXXFLAGS = "-I$env:CONDA_PREFIX/include"
+          }
+
           python -m pip install build wheel
           
       - name: Change Package Name

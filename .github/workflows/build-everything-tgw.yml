@@ -25,7 +25,7 @@ jobs:
     uses: ./.github/workflows/build-wheels-oobabooga.yml
     with:
       version: ${{ inputs.version }}
-      config: 'os:ubuntu-20.04'
+      config: 'os:ubuntu-22.04'
 
   build_wheels_tensorcores_windows:
     name: Tensor Core Windows
@@ -39,7 +39,7 @@ jobs:
     uses: ./.github/workflows/build-wheels-tensorcores.yml
     with:
       version: ${{ inputs.version }}
-      config: 'os:ubuntu-20.04'
+      config: 'os:ubuntu-22.04'
 
   build_wheels_cpu:
     name: CPU-only Wheels
