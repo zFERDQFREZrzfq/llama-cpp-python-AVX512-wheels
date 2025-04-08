@@ -98,10 +98,18 @@ jobs:
 
       - name: Build Wheel
         run: |
-          XCODE15PATH="/Applications/Xcode_15.0.app/Contents/Developer"
+          # Find Xcode for macOS-15, otherwise use hardcoded path
+          if [[ "$OSVER" == "macos-15" ]]; then
+            XCODE15PATH=$(ls -d /Applications/Xcode*.app | head -1)/Contents/Developer
+          else
+            XCODE15PATH="/Applications/Xcode_15.0.app/Contents/Developer"
+          fi
+
           XCODE15BINPATH="${XCODE15PATH}/Toolchains/XcodeDefault.xctoolchain/usr/bin"
           export CMAKE_ARGS="-DGGML_NATIVE=off -DGGML_METAL=on"
-          [[ "$OSVER" == "macos-15" ]] && export CC="${XCODE15BINPATH}/cc" && export CXX="${XCODE15BINPATH}/c++" && export MACOSX_DEPLOYMENT_TARGET="15.0" && export SDKROOT="${XCODE15PATH}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+
+          # Add macOS-15 and macOS-14 support while keeping original structure
+          [[ "$OSVER" == "macos-15" ]] && export CC="${XCODE15BINPATH}/cc" && export CXX="${XCODE15BINPATH}/c++" && export MACOSX_DEPLOYMENT_TARGET="15.0"
           [[ "$OSVER" == "macos-14" ]] && export CC="${XCODE15BINPATH}/cc" && export CXX="${XCODE15BINPATH}/c++" && export MACOSX_DEPLOYMENT_TARGET="14.0"
           [[ "$OSVER" == "macos-13" ]] && export CC="${XCODE15BINPATH}/cc" && export CXX="${XCODE15BINPATH}/c++" && export MACOSX_DEPLOYMENT_TARGET="13.0"
           [[ "$OSVER" == "macos-12" ]] && export MACOSX_DEPLOYMENT_TARGET="12.0"
