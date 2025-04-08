@@ -98,42 +98,44 @@ jobs:
 
       - name: Build Wheel
         run: |
-          # Find Xcode for all macOS versions
+          # Find the actual Xcode path once
           XCODE_PATH=$(ls -d /Applications/Xcode*.app | head -1)
-          XCODE15PATH="${XCODE_PATH}/Contents/Developer"
-          XCODE15BINPATH="${XCODE15PATH}/Toolchains/XcodeDefault.xctoolchain/usr/bin"
+          echo "Using Xcode at: ${XCODE_PATH}"
+          XCODEDEV="${XCODE_PATH}/Contents/Developer"
+          XCODEBINPATH="${XCODEDEV}/Toolchains/XcodeDefault.xctoolchain/usr/bin"
 
           # Set common arguments
           export CMAKE_ARGS="-DGGML_NATIVE=off -DGGML_METAL=on"
 
-          # Set SDK root for all macOS versions to ensure 'System' library is found
-          export SDKROOT="${XCODE15PATH}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+          # Always set the SDK root to avoid 'System' library not found errors
+          export SDKROOT="${XCODEDEV}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
 
-          [[ "$OSVER" == "macos-15" ]] && export CC="${XCODE15BINPATH}/cc" && export CXX="${XCODE15BINPATH}/c++" && export MACOSX_DEPLOYMENT_TARGET="15.0"
-          [[ "$OSVER" == "macos-14" ]] && export CC="${XCODE15BINPATH}/cc" && export CXX="${XCODE15BINPATH}/c++" && export MACOSX_DEPLOYMENT_TARGET="14.0"
-          [[ "$OSVER" == "macos-13" ]] && export CC="${XCODE15BINPATH}/cc" && export CXX="${XCODE15BINPATH}/c++" && export MACOSX_DEPLOYMENT_TARGET="13.0"
+          # Set correct compiler paths
+          export CC="${XCODEBINPATH}/cc"
+          export CXX="${XCODEBINPATH}/c++"
+
+          # Set deployment target based on OS version
+          [[ "$OSVER" == "macos-15" ]] && export MACOSX_DEPLOYMENT_TARGET="15.0"
+          [[ "$OSVER" == "macos-14" ]] && export MACOSX_DEPLOYMENT_TARGET="14.0"
+          [[ "$OSVER" == "macos-13" ]] && export MACOSX_DEPLOYMENT_TARGET="13.0"
           [[ "$OSVER" == "macos-12" ]] && export MACOSX_DEPLOYMENT_TARGET="12.0"
           [[ "$OSVER" == "macos-11" ]] && export MACOSX_DEPLOYMENT_TARGET="11.0"
 
+          # ARM64 build
           export CMAKE_OSX_ARCHITECTURES="arm64" && export ARCHFLAGS="-arch arm64"
           VERBOSE=1 python -m build --wheel
 
-          if [[ "$OSVER" == "macos-13" ]]; then
-            export SDKROOT="${XCODE15PATH}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk"
-            export MACOSX_DEPLOYMENT_TARGET="14.0"
-            VERBOSE=1 python -m build --wheel
-          fi
-
+          # Create aarch64 copies
           for file in ./dist/*.whl; do cp "$file" "${file/arm64.whl/aarch64.whl}"; done
 
-          export CMAKE_OSX_ARCHITECTURES="x86_64" && export CMAKE_ARGS="-DGGML_NATIVE=off -DGGML_AVX=off -DGGML_AVX2=off -DGGML_FMA=off -DGGML_F16C=off -DGGML_METAL=on" && export ARCHFLAGS="-arch x86_64"
-          VERBOSE=1 python -m build --wheel
+          # Explicitly reset the SDK path for the second build
+          export SDKROOT="${XCODEDEV}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
 
-          if [[ "$OSVER" == "macos-13" ]]; then
-            export SDKROOT="${XCODE15PATH}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk"
-            export MACOSX_DEPLOYMENT_TARGET="14.0"
-            VERBOSE=1 python -m build --wheel
-          fi
+          # x86_64 build with specific flags
+          export CMAKE_OSX_ARCHITECTURES="x86_64"
+          export CMAKE_ARGS="-DGGML_NATIVE=off -DGGML_AVX=off -DGGML_AVX2=off -DGGML_FMA=off -DGGML_F16C=off -DGGML_METAL=on"
+          export ARCHFLAGS="-arch x86_64"
+          VERBOSE=1 python -m build --wheel
 
       - name: Upload files to a GitHub release
         id: upload-release
