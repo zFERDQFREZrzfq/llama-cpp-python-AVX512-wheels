@@ -57,10 +57,10 @@ jobs:
         id: set-matrix
         run: |
           $matrix = @{
-              'os' = "macos-13", "macos-14", "macos-15"
-              'pyver' = "3.11"
+              'os' = @("macos-13", "macos-14", "macos-15")
+              'pyver' = @("3.11")
           }
-          
+
           if ($env:CONFIGIN -ne 'Default') {$env:CONFIGIN.split(';').foreach({$matrix[$_.split(':')[0]] = $_.split(':')[1].split(',')})}
           
           if ($env:EXCLUDEIN -ne 'None') {
