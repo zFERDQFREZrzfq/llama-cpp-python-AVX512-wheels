@@ -92,24 +92,8 @@ jobs:
         with:
           python-version: ${{ matrix.pyver }}
 
-      - name: Setup Mamba
-        uses: conda-incubator/setup-miniconda@v3.1.0
-        with: 
-          activate-environment: "TGW"
-          python-version: ${{ matrix.pyver }}
-          miniforge-version: latest
-          add-pip-as-python-dependency: true
-          auto-activate-base: false
-
       - name: Install Dependencies
         run: |
-          # --- Install older libstdcxx-ng and set environment variables for compiler flags (Linux only)
-          if ($IsLinux) {
-            mamba install -y -c conda-forge libstdcxx-ng=9.3.0
-            $env:LDFLAGS = "-L$env:CONDA_PREFIX/lib -Wl,-rpath,$env:CONDA_PREFIX/lib"
-            $env:CXXFLAGS = "-I$env:CONDA_PREFIX/include"
-          }
-
           python -m pip install build wheel cmake
 
       - name: Build Wheel
