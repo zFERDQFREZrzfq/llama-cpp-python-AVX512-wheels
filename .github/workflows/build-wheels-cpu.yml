@@ -51,7 +51,7 @@ jobs:
     env:
       CONFIGIN: ${{ inputs.config }}
       EXCLUDEIN: ${{ inputs.exclude }}
-        
+
     steps:
       - name: Define Job Output
         id: set-matrix
@@ -63,16 +63,16 @@ jobs:
           }
 
           if ($env:CONFIGIN -ne 'Default') {$env:CONFIGIN.split(';').foreach({$matrix[$_.split(':')[0]] = $_.split(':')[1].split(',')})}
-          
+
           if ($env:EXCLUDEIN -ne 'None') {
               $exclusions = @()
               $exclusions += $env:EXCLUDEIN.split(';').replace(':','=').replace(',',"`n") | ConvertFrom-StringData
               $matrix['exclude'] = $exclusions
           }
-          
+
           $matrixOut = ConvertTo-Json $matrix -Compress
           Write-Output ('matrix=' + $matrixOut) >> $env:GITHUB_OUTPUT
-          
+
   build_wheels:
     name: ${{ matrix.os }} ${{ matrix.pyver }} CPU ${{ matrix.avx }}
     needs: define_matrix
@@ -92,11 +92,11 @@ jobs:
           repository: 'abetlen/llama-cpp-python'
           ref: ${{ inputs.version }}
           submodules: 'recursive'
-          
+
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.pyver }}
-          
+
       - name: Install Dependencies
         run: |
           # --- Install older libstdcxx-ng and set environment variables for compiler flags (Linux only)
@@ -107,7 +107,7 @@ jobs:
           }
 
           python -m pip install build wheel
-          
+
       - name: Build Wheel
         run: |
           $packageVersion = [version]$env:PCKGVER.TrimStart('v')
@@ -130,7 +130,7 @@ jobs:
             New-Item $initpath -itemType File -value $newinit -force
             python -m build --wheel
           }
-          
+
       - name: Upload files to a GitHub release
         id: upload-release
         uses: svenstaro/upload-release-action@2.7.0
@@ -142,7 +142,7 @@ jobs:
           file_glob: true
           make_latest: false
           overwrite: true
-        
+
       - uses: actions/upload-artifact@v4
         if: steps.upload-release.outcome == 'failure'
         with:

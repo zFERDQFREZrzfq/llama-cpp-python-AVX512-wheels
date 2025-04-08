@@ -51,7 +51,7 @@ jobs:
     env:
       CONFIGIN: ${{ inputs.config }}
       EXCLUDEIN: ${{ inputs.exclude }}
-        
+
     steps:
       - name: Define Job Output
         id: set-matrix
@@ -64,16 +64,16 @@ jobs:
           }
 
           if ($env:CONFIGIN -ne 'Default') {$env:CONFIGIN.split(';').foreach({$matrix[$_.split(':')[0]] = $_.split(':')[1].split(',')})}
-          
+
           if ($env:EXCLUDEIN -ne 'None') {
               $exclusions = @()
               $exclusions += $env:EXCLUDEIN.split(';').replace(':','=').replace(',',"`n") | ConvertFrom-StringData
               $matrix['exclude'] = $exclusions
           }
-          
+
           $matrixOut = ConvertTo-Json $matrix -Compress
           Write-Output ('matrix=' + $matrixOut) >> $env:GITHUB_OUTPUT
-          
+
   build_wheels:
     name: Build Wheel ${{ matrix.os }} ${{ matrix.pyver }} ${{ matrix.cuda }} ${{ matrix.avxver }}
     needs: define_matrix
@@ -100,7 +100,7 @@ jobs:
           repository: 'abetlen/llama-cpp-python'
           ref: ${{ inputs.version }}
           submodules: 'recursive'
-          
+
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.pyver }}
@@ -121,7 +121,7 @@ jobs:
         with:
           path: ./MSBuildExtensions
           key: cuda-${{ matrix.cuda }}-vs-integration
-          
+
       - name: Get Visual Studio Integration
         if: runner.os == 'Windows' && steps.vs-integration-cache.outputs.cache-hit != 'true'
         run: |
@@ -131,7 +131,7 @@ jobs:
           Invoke-RestMethod $links[$i].Trim("'") -OutFile 'cudainstaller.zip'
           & 'C:\Program Files\7-Zip\7z.exe' e cudainstaller.zip -oMSBuildExtensions -r *\MSBuildExtensions\* > $null
           Remove-Item 'cudainstaller.zip'
-          
+
       - name: Install Visual Studio Integration
         if: runner.os == 'Windows'
         run: |
@@ -139,7 +139,7 @@ jobs:
           (gi 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\*\BuildCustomizations').fullname.foreach({cp $y $_})
           $cupath = 'CUDA_PATH_V' + $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.')).Replace('.','_')
           echo "$cupath=$env:CONDA_PREFIX" >> $env:GITHUB_ENV
-          
+
       - name: Install Dependencies
         run: |
           $cudaVersion = $env:CUDAVER
@@ -158,7 +158,7 @@ jobs:
           }
 
           python -m pip install build wheel
-          
+
       - name: Change Package Name
         run: |
           $packageVersion = [version]$env:PCKGVER.TrimStart('v')
@@ -186,7 +186,7 @@ jobs:
           Copy-Item 'llama_cpp' 'llama_cpp_cuda_tensorcores' -recurse
           New-Item 'pyproject.toml' -itemType File -value $newpyproject -force
           New-Item 'CMakeLists.txt' -itemType File -value $cmakelists.Replace('llama_cpp','llama_cpp_cuda_tensorcores') -force
-          
+
           if ($packageVersion -gt [version]'0.2.13')
           {
             $pyScripts = (Get-ChildItem $(Join-Path '.' 'llama_cpp_cuda_tensorcores' '*.py'))
@@ -198,7 +198,7 @@ jobs:
                 $content | Set-Content $_ -NoNewline
             })
           }
-          
+
       - name: Build Wheel
         run: |
           $packageVersion = [version]$env:PCKGVER.TrimStart('v')
@@ -229,7 +229,7 @@ jobs:
             New-Item $initpath -itemType File -value $newinit -force
             python -m build --wheel
           }
-          
+
       - name: Upload files to a GitHub release
         id: upload-release
         uses: svenstaro/upload-release-action@2.7.0
@@ -241,7 +241,7 @@ jobs:
           file_glob: true
           make_latest: false
           overwrite: true
-        
+
       - uses: actions/upload-artifact@v4
         if: steps.upload-release.outcome == 'failure'
         with:

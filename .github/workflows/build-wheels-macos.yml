@@ -51,7 +51,7 @@ jobs:
     env:
       CONFIGIN: ${{ inputs.config }}
       EXCLUDEIN: ${{ inputs.exclude }}
-        
+
     steps:
       - name: Define Job Output
         id: set-matrix
@@ -62,16 +62,16 @@ jobs:
           }
 
           if ($env:CONFIGIN -ne 'Default') {$env:CONFIGIN.split(';').foreach({$matrix[$_.split(':')[0]] = $_.split(':')[1].split(',')})}
-          
+
           if ($env:EXCLUDEIN -ne 'None') {
               $exclusions = @()
               $exclusions += $env:EXCLUDEIN.split(';').replace(':','=').replace(',',"`n") | ConvertFrom-StringData
               $matrix['exclude'] = $exclusions
           }
-          
+
           $matrixOut = ConvertTo-Json $matrix -Compress
           Write-Output ('matrix=' + $matrixOut) >> $env:GITHUB_OUTPUT
-          
+
   build_wheels:
     name: ${{ matrix.os }} Python ${{ matrix.pyver }}
     needs: define_matrix
@@ -87,11 +87,11 @@ jobs:
           repository: 'abetlen/llama-cpp-python'
           ref: ${{ inputs.version }}
           submodules: 'recursive'
-          
+
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.pyver }}
-          
+
       - name: Install Dependencies
         run: |
           # --- Install older libstdcxx-ng and set environment variables for compiler flags (Linux only)
@@ -102,7 +102,7 @@ jobs:
           }
 
           python -m pip install build wheel cmake
-          
+
       - name: Build Wheel
         run: |
           XCODE15PATH="/Applications/Xcode_15.0.app/Contents/Developer"
@@ -111,27 +111,27 @@ jobs:
           [[ "$OSVER" == "macos-13" ]] && export CC="${XCODE15BINPATH}/cc" && export CXX="${XCODE15BINPATH}/c++" && export MACOSX_DEPLOYMENT_TARGET="13.0"
           [[ "$OSVER" == "macos-12" ]] && export MACOSX_DEPLOYMENT_TARGET="12.0"
           [[ "$OSVER" == "macos-11" ]] && export MACOSX_DEPLOYMENT_TARGET="11.0"
-          
+
           export CMAKE_OSX_ARCHITECTURES="arm64" && export ARCHFLAGS="-arch arm64"
           VERBOSE=1 python -m build --wheel
-          
+
           if [[ "$OSVER" == "macos-13" ]]; then
             export SDKROOT="${XCODE15PATH}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk"
             export MACOSX_DEPLOYMENT_TARGET="14.0"
             VERBOSE=1 python -m build --wheel
           fi
-          
+
           for file in ./dist/*.whl; do cp "$file" "${file/arm64.whl/aarch64.whl}"; done
-          
+
           export CMAKE_OSX_ARCHITECTURES="x86_64" && export CMAKE_ARGS="-DGGML_NATIVE=off -DGGML_AVX=off -DGGML_AVX2=off -DGGML_FMA=off -DGGML_F16C=off -DGGML_METAL=on" && export ARCHFLAGS="-arch x86_64"
           VERBOSE=1 python -m build --wheel
-          
+
           if [[ "$OSVER" == "macos-13" ]]; then
             export SDKROOT="${XCODE15PATH}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk"
             export MACOSX_DEPLOYMENT_TARGET="14.0"
             VERBOSE=1 python -m build --wheel
           fi
-          
+
       - name: Upload files to a GitHub release
         id: upload-release
         uses: svenstaro/upload-release-action@2.7.0
@@ -143,7 +143,7 @@ jobs:
           file_glob: true
           make_latest: false
           overwrite: true
-        
+
       - uses: actions/upload-artifact@v4
         if: steps.upload-release.outcome == 'failure'
         with:
