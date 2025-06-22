@@ -60,7 +60,7 @@ jobs:
               'os' = @('ubuntu-22.04', 'windows-2019')
               'pyver' = @("3.11")
               'cuda' = @("12.4.1")
-              'avxver' = @("AVX2", "AVX")
+              'avxver' = @("AVX512")
           }
 
           if ($env:CONFIGIN -ne 'Default') {$env:CONFIGIN.split(';').foreach({$matrix[$_.split(':')[0]] = $_.split(':')[1].split(',')})}
@@ -206,6 +206,7 @@ jobs:
           if ($packageVersion -gt [version]'0.1.68' -and $packageVersion -lt [version]'0.1.71' -and [version]$env:CUDAVER -lt [version]'11.8') {$env:CMAKE_ARGS = '-DGGML_CUDA=on -DCMAKE_CUDA_ARCHITECTURES=35-real;37-real;52;61-real;70-real;72-real;75-real;80-real;86'}
           if ($packageVersion -gt [version]'0.2.13') {$env:CMAKE_ARGS = "-DGGML_NATIVE=off $env:CMAKE_ARGS"}
           if ($packageVersion -lt [version]'0.1.66') {$env:CUDAFLAGS = '-arch=all'}
+          if ($env:AVXVER -eq 'AVX512') {$env:CMAKE_ARGS = $env:CMAKE_ARGS + '-DGGML_AVX512=on -DGGML_AVX512F=on -DGGML_AVX512=on -GGML_AVX512_VBMI=on -GGML_AVX512_VNNI=on -GGML_AVX512_BF16=on'; $cputag = 'avx512'}
           if ($env:AVXVER -eq 'AVX') {$env:CMAKE_ARGS = $env:CMAKE_ARGS + ' -DGGML_AVX2=off -DGGML_FMA=off -DGGML_F16C=off'; $cputag = 'avx'}
           if ($env:AVXVER -eq 'basic') {$env:CMAKE_ARGS = $env:CMAKE_ARGS + ' -DGGML_AVX=off -DGGML_AVX2=off -DGGML_FMA=off -DGGML_F16C=off'; $cputag = 'basic'}
           $buildtag = "+cu$cudaVersion$cputag"
